@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ const carsData = [
 ];
 
 export default function CarFilterPage() {
+  const [user, setUser] = useState(null);
   const [query, setQuery] = useState("");
   const [favorites, setFavorites] = useState([]);
   const [filters, setFilters] = useState({
@@ -25,6 +26,12 @@ export default function CarFilterPage() {
     fuel: "",
     engine: "",
   });
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const userName = params.get("user");
+    setUser(userName);
+  }, []);
 
   const handleFilterChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -50,8 +57,9 @@ export default function CarFilterPage() {
   });
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <h1 className="text-3xl font-semibold mb-6 text-center">🚗 Car Search & Filter</h1>
+    <div className="min-h-screen bg-gray-50">
+      <div className="p-6 max-w-6xl mx-auto">
+        <h2 className="text-3xl font-semibold mb-6 text-center">🚗 Car Search & Filter</h2>
 
       {/* Search Bar */}
       <div className="flex items-center gap-2 mb-6">
@@ -203,6 +211,7 @@ export default function CarFilterPage() {
           </p>
         )}
       </div>
+    </div>
     </div>
   );
 }

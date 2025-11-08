@@ -44,8 +44,8 @@ export default function HomePage() {
       const data = await response.json();
 
       if (response.ok) {
-        // Redirect to dashboard with user info
-        router.push(`/dashboard?user=${encodeURIComponent(data.user.displayName)}`);
+        // Redirect to filter page with user info
+        router.push(`/filter?user=${encodeURIComponent(data.user.displayName)}`);
       } else {
         setError(data.error || "Signup failed. Please try again.");
       }
@@ -154,29 +154,39 @@ export default function HomePage() {
           >
             {loading ? "Signing up..." : "Sign Up"}
           </button>
-
-          {/* Divider */}
-          <div className="flex items-center gap-2 my-4">
-            <hr className="flex-grow border-gray-300" />
-            <span className="text-gray-500 text-sm">or</span>
-            <hr className="flex-grow border-gray-300" />
-          </div>
-
-          <a
-            href="http://localhost:5001/auth/google"
-            className="flex items-center justify-center gap-3 w-full border border-gray-300 rounded-full py-2 hover:bg-gray-100 transition cursor-pointer"
-          >
-            <Image
-              src="https://www.svgrepo.com/show/475656/google-color.svg"
-              alt="Google Icon"
-              width={20}
-              height={20}
-            />
-            <span className="font-medium text-gray-700">
-              Continue with Google
-            </span>
-          </a>
         </form>
+
+        {/* Login link */}
+        <div className="mt-4 text-center">
+          <p className="text-sm text-gray-600">
+            Already have an account?{" "}
+            <a href="/login" className="text-red-600 hover:text-red-700 font-medium underline">
+              Log in
+            </a>
+          </p>
+        </div>
+
+        {/* Divider */}
+        <div className="flex items-center gap-2 my-4">
+          <hr className="flex-grow border-gray-300" />
+          <span className="text-gray-500 text-sm">or</span>
+          <hr className="flex-grow border-gray-300" />
+        </div>
+
+        <a
+          href="http://localhost:5001/auth/google"
+          className="flex items-center justify-center gap-3 w-full border border-gray-300 rounded-full py-2 hover:bg-gray-100 transition cursor-pointer"
+        >
+          <Image
+            src="https://www.svgrepo.com/show/475656/google-color.svg"
+            alt="Google Icon"
+            width={20}
+            height={20}
+          />
+          <span className="font-medium text-gray-700">
+            Continue with Google
+          </span>
+        </a>
       </div>
     </div>
   );

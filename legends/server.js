@@ -61,7 +61,7 @@ app.get(
   passport.authenticate("google", { failureRedirect: "http://localhost:3000" }),
   (req, res) => {
     // Redirect back to frontend with user info in query string
-    res.redirect(`http://localhost:3000/dashboard?user=${req.user.displayName}`);
+    res.redirect(`http://localhost:3000/filter?user=${req.user.displayName}`);
   }
 );
 
