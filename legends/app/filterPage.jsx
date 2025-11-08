@@ -25,7 +25,7 @@ export default function CarFilterPage() {
     engine: "",
   });
 
-  const handleFilterChange = (key: string, value: any) => {
+  const handleFilterChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
@@ -43,7 +43,7 @@ export default function CarFilterPage() {
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
-      <h1 className="text-3xl font-semibold mb-6 text-center">Toyota Vehicle Search & Filter 🚗 </h1>
+      <h1 className="text-3xl font-semibold mb-6 text-center">🚗 Car Search & Filter</h1>
 
       {/* Search Bar */}
       <div className="flex items-center gap-2 mb-6">
@@ -59,12 +59,11 @@ export default function CarFilterPage() {
       </div>
 
       {/* Filter Panel */}
-      <Card className="mb-8 bg-white text-black border-2 border-red-600 shadow-md">
+      <Card className="mb-8">
         <CardHeader>
-          <CardTitle className="text-black">Filter Options</CardTitle>
+          <CardTitle>Filter Options</CardTitle>
         </CardHeader>
-        <CardContent className="grid md:grid-cols-3 gap-4 text-black">
-          {/* Cost Range */}
+        <CardContent className="grid md:grid-cols-3 gap-4">
           <div>
             <label className="text-sm font-medium">Cost Range ($)</label>
             <Slider
@@ -74,18 +73,16 @@ export default function CarFilterPage() {
               value={filters.cost}
               onValueChange={(value) => handleFilterChange("cost", value)}
             />
-            <p className="text-sm text-black mt-1">
+            <p className="text-sm text-muted-foreground mt-1">
               ${filters.cost[0]} - ${filters.cost[1]}
             </p>
           </div>
 
-          {/* Year */}
           <div>
             <label className="text-sm font-medium">Year</label>
             <Select onValueChange={(v) => handleFilterChange("year", v)}>
               <SelectTrigger><SelectValue placeholder="Select year" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="">—</SelectItem>
                 {[2025, 2024, 2023, 2022, 2021, 2020].map((yr) => (
                   <SelectItem key={yr} value={yr.toString()}>{yr}</SelectItem>
                 ))}
@@ -93,27 +90,23 @@ export default function CarFilterPage() {
             </Select>
           </div>
 
-          {/* Type of Car */}
           <div>
             <label className="text-sm font-medium">Type of Car</label>
             <Select onValueChange={(v) => handleFilterChange("type", v)}>
               <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
               <SelectContent>
-              <SelectItem value="none">—</SelectItem>
-              <SelectItem value="Sedan">Sedan</SelectItem>
-              <SelectItem value="SUV">SUV</SelectItem>
-              <SelectItem value="Coupe">Coupe</SelectItem>
+                <SelectItem value="Sedan">Sedan</SelectItem>
+                <SelectItem value="SUV">SUV</SelectItem>
+                <SelectItem value="Coupe">Coupe</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          {/* Fuel */}
           <div>
             <label className="text-sm font-medium">Fuel Type</label>
             <Select onValueChange={(v) => handleFilterChange("fuel", v)}>
               <SelectTrigger><SelectValue placeholder="Select fuel" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="">—</SelectItem>
                 <SelectItem value="Gasoline">Gasoline</SelectItem>
                 <SelectItem value="Diesel">Diesel</SelectItem>
                 <SelectItem value="Hybrid">Hybrid</SelectItem>
@@ -122,13 +115,11 @@ export default function CarFilterPage() {
             </Select>
           </div>
 
-          {/* Engine */}
           <div>
             <label className="text-sm font-medium">Engine</label>
             <Select onValueChange={(v) => handleFilterChange("engine", v)}>
               <SelectTrigger><SelectValue placeholder="Select engine" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="">—</SelectItem>
                 <SelectItem value="EV">EV</SelectItem>
                 <SelectItem value="I4">I4</SelectItem>
                 <SelectItem value="V6">V6</SelectItem>
@@ -137,7 +128,6 @@ export default function CarFilterPage() {
             </Select>
           </div>
 
-          {/* Interest Rate */}
           <div>
             <label className="text-sm font-medium">Interest Rate (%)</label>
             <Input
@@ -150,41 +140,26 @@ export default function CarFilterPage() {
       </Card>
 
       {/* Car Results */}
-      <div className="space-y-6">
+      <div className="grid md:grid-cols-3 gap-6">
         {filteredCars.map((car, i) => (
-          <Card
-            key={i}
-            className="flex flex-col md:flex-row items-center md:items-start gap-6 p-4 border border-black bg-white text-black hover:shadow-lg hover:border-red-600 transition-all"
-          >
-            {/* Car Image */}
-            <div className="w-full md:w-1/3 flex justify-center">
-              <img
-                src={`/cars/${car.model.toLowerCase().replace(/\s+/g, "-")}.jpg`}
-                alt={car.model}
-                className="w-full max-w-sm h-48 object-cover rounded-lg border-2 border-red-600"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = "/cars/default.jpg";
-                }}
-              />
-            </div>
-
-            {/* Car Details */}
-            <div className="flex-1 space-y-2 text-left">
-              <h2 className="text-2xl font-bold text-black">{car.model}</h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-1 text-sm">
-                <p>Year: {car.year}</p>
-                <p>Type: {car.type}</p>
-                <p>Fuel: {car.fuel}</p>
-                <p>Engine: {car.engine}</p>
-                <p className="font-semibold">Cost: ${car.cost.toLocaleString()}</p>
-                <p>Interest: {car.interest}%</p>
-              </div>
-            </div>
+          <Card key={i} className="hover:shadow-lg transition-all">
+            <CardHeader>
+              <CardTitle>{car.model}</CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm text-muted-foreground">
+              <p>Year: {car.year}</p>
+              <p>Type: {car.type}</p>
+              <p>Fuel: {car.fuel}</p>
+              <p>Engine: {car.engine}</p>
+              <p>Cost: ${car.cost.toLocaleString()}</p>
+              <p>Interest Rate: {car.interest}%</p>
+            </CardContent>
           </Card>
         ))}
-
         {filteredCars.length === 0 && (
-          <p className="text-center text-gray-500">No cars match your filters.</p>
+          <p className="col-span-full text-center text-gray-500">
+            No cars match your search and filters.
+          </p>
         )}
       </div>
     </div>
