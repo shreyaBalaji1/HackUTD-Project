@@ -1,7 +1,61 @@
 "use client";
 import Image from "next/image";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function HomePage() {
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+
+    // Validate passwords match
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    // Validate password length
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters long");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await fetch("http://localhost:5001/api/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ firstName, lastName, email, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Redirect to dashboard with user info
+        router.push(`/dashboard?user=${encodeURIComponent(data.user.displayName)}`);
+      } else {
+        setError(data.error || "Signup failed. Please try again.");
+      }
+    } catch (err) {
+      setError("Cannot connect to server. Please make sure the server is running.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-red-500 via-white-500 to-black-100 text-gray-800">
       <div className="bg-white rounded-xl shadow-xl border border-blue-400 p-10 w-96 text-center">
@@ -16,7 +70,13 @@ export default function HomePage() {
 
         <h2 className="text-2xl font-bold mb-6">Sign Up</h2>
 
-        <form className="flex flex-col gap-3 text-left">
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-md text-sm">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3 text-left">
           <div>
             <label className="text-sm font-medium text-gray-700">
               First Name
@@ -24,6 +84,9 @@ export default function HomePage() {
             <input
               type="text"
               placeholder="Enter your first name"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              required
               className="w-full border border-gray-300 rounded-md p-2 mt-1 focus:ring-2 focus:ring-blue-400 outline-none"
             />
           </div>
@@ -35,6 +98,9 @@ export default function HomePage() {
             <input
               type="text"
               placeholder="Enter your last name"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              required
               className="w-full border border-gray-300 rounded-md p-2 mt-1 focus:ring-2 focus:ring-blue-400 outline-none"
             />
           </div>
@@ -44,6 +110,9 @@ export default function HomePage() {
             <input
               type="email"
               placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
               className="w-full border border-gray-300 rounded-md p-2 mt-1 focus:ring-2 focus:ring-blue-400 outline-none"
             />
           </div>
@@ -53,8 +122,12 @@ export default function HomePage() {
               Password
             </label>
             <input
-              type="Enter password"
+              type="password"
               placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={6}
               className="w-full border border-gray-300 rounded-md p-2 mt-1 focus:ring-2 focus:ring-blue-400 outline-none"
             />
           </div>
@@ -64,17 +137,22 @@ export default function HomePage() {
               Confirm Password
             </label>
             <input
-              type="Enter password"
-              placeholder="Enter your password"
+              type="password"
+              placeholder="Confirm your password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              minLength={6}
               className="w-full border border-gray-300 rounded-md p-2 mt-1 focus:ring-2 focus:ring-blue-400 outline-none"
             />
           </div>
 
           <button
             type="submit"
-            className="w-full mt-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
+            disabled={loading}
+            className="w-full mt-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Sign Up
+            {loading ? "Signing up..." : "Sign Up"}
           </button>
 
           {/* Divider */}
@@ -84,7 +162,10 @@ export default function HomePage() {
             <hr className="flex-grow border-gray-300" />
           </div>
 
-          <button className="flex items-center justify-center gap-3 w-full border border-gray-300 rounded-full py-2 hover:bg-gray-100 transition">
+          <a
+            href="http://localhost:5001/auth/google"
+            className="flex items-center justify-center gap-3 w-full border border-gray-300 rounded-full py-2 hover:bg-gray-100 transition cursor-pointer"
+          >
             <Image
               src="https://www.svgrepo.com/show/475656/google-color.svg"
               alt="Google Icon"
@@ -94,7 +175,7 @@ export default function HomePage() {
             <span className="font-medium text-gray-700">
               Continue with Google
             </span>
-          </button>
+          </a>
         </form>
       </div>
     </div>
