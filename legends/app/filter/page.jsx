@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { Search } from "lucide-react";
+import { Search, Heart } from "lucide-react";
 
 const carsData = [
   { model: "Tesla Model 3", year: 2023, type: "Sedan", fuel: "Electric", engine: "EV", cost: 45000, interest: 3.5 },
@@ -17,6 +17,7 @@ const carsData = [
 
 export default function CarFilterPage() {
   const [query, setQuery] = useState("");
+  const [favorites, setFavorites] = useState([]);
   const [filters, setFilters] = useState({
     cost: [0, 100000],
     year: "",
@@ -27,6 +28,13 @@ export default function CarFilterPage() {
 
   const handleFilterChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const toggleFavorite = (car) => {
+    setFavorites((prev) => {
+      const isFav = prev.some((fav) => fav.model === car.model);
+      return isFav ? prev.filter((f) => f.model !== car.model) : [...prev, car];
+    });
   };
 
   const filteredCars = carsData.filter((car) => {
@@ -59,7 +67,7 @@ export default function CarFilterPage() {
       </div>
 
       {/* Filter Panel */}
-      <Card className="mb-8">
+      <Card className="mb-8 border-2 border-red-600 bg-white text-black shadow-md">
         <CardHeader>
           <CardTitle>Filter Options</CardTitle>
         </CardHeader>
@@ -140,24 +148,57 @@ export default function CarFilterPage() {
       </Card>
 
       {/* Car Results */}
-      <div className="grid md:grid-cols-3 gap-6">
+      <div className="space-y-6 mt-10">
         {filteredCars.map((car, i) => (
-          <Card key={i} className="hover:shadow-lg transition-all">
-            <CardHeader>
-              <CardTitle>{car.model}</CardTitle>
-            </CardHeader>
-            <CardContent className="text-sm text-muted-foreground">
-              <p>Year: {car.year}</p>
-              <p>Type: {car.type}</p>
-              <p>Fuel: {car.fuel}</p>
-              <p>Engine: {car.engine}</p>
-              <p>Cost: ${car.cost.toLocaleString()}</p>
-              <p>Interest Rate: {car.interest}%</p>
-            </CardContent>
+          <Card
+            key={i}
+            className="flex flex-col md:flex-row items-center md:items-start gap-6 p-4 border-2 border-red-600 bg-white text-black rounded-xl shadow-md hover:shadow-lg transition-all"
+          >
+            {/* Car Image */}
+            <div className="w-full md:w-1/3 flex justify-center">
+              <img
+                src={`/cars/${car.model.toLowerCase().replace(/\s+/g, "-")}.jpg`}
+                alt={car.model}
+                className="w-full max-w-sm h-48 object-cover rounded-lg border-2 border-red-600"
+                onError={(e) => (e.target.src = "/cars/default.jpg")}
+              />
+            </div>
+
+            {/* Car Details */}
+            <div className="flex-1 space-y-2 text-left">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-black flex items-center gap-2">
+                  {car.model}
+                  <button
+                    onClick={() => toggleFavorite(car)}
+                    className="transition-all hover:scale-110"
+                  >
+                    <Heart
+                      size={24}
+                      stroke="red"
+                      fill={favorites.some((fav) => fav.model === car.model) ? "red" : "none"}
+                      className="text-red-600 w-6 h-6"
+                    />
+
+
+                  </button>
+                </h2>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-1 text-sm">
+                <p>Year: {car.year}</p>
+                <p>Type: {car.type}</p>
+                <p>Fuel: {car.fuel}</p>
+                <p>Engine: {car.engine}</p>
+                <p className="font-semibold">Cost: ${car.cost.toLocaleString()}</p>
+                <p>Interest: {car.interest}%</p>
+              </div>
+            </div>
           </Card>
         ))}
+
         {filteredCars.length === 0 && (
-          <p className="col-span-full text-center text-gray-500">
+          <p className="text-center text-gray-500">
             No cars match your search and filters.
           </p>
         )}
