@@ -1,4 +1,3 @@
-// Updated Toyota-style car filter page with sidebar filtering
 "use client";
 import Image from "next/image";
 import { useState } from "react";
@@ -29,8 +28,8 @@ export default function HomePage() {
       const data = await response.json();
 
       if (response.ok) {
-        // Redirect to dashboard with user info
-        router.push(`/dashboard?user=${encodeURIComponent(data.user.displayName)}`);
+        // Redirect to filter page with user info
+        router.push(`/filter?user=${encodeURIComponent(data.user.displayName)}`);
       } else {
         setError(data.error || "Login failed. Please try again.");
       }
@@ -96,6 +95,16 @@ export default function HomePage() {
             {loading ? "Logging in..." : "Log In"}
           </button>
         </form>
+
+        {/* Sign up link */}
+        <div className="mt-4 text-center">
+          <p className="text-sm text-gray-600">
+            Don't have an account?{" "}
+            <a href="/signup" className="text-red-600 hover:text-red-700 font-medium underline">
+              Sign up
+            </a>
+          </p>
+        </div>
 
         {/* Divider */}
         <div className="flex items-center gap-2 my-4">
