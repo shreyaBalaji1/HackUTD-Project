@@ -6,110 +6,78 @@ async function main() {
   // Clear existing data
   await prisma.car.deleteMany();
 
-  // Add demo cars
-  await prisma.car.createMany({
-    data: [
-      {
+  // MSRP for 2025 models
+  const msrp = {
+    Camry: 32000,
+    RAV4: 35000,
+    Highlander: 45000,
+    Supra: 55000,
+    BZ4X: 42000,
+    Prius: 28000,
+    '4Runner': 50000,
+    Tacoma: 39000,
+    Sienna: 41000,
+  };
+
+  const trims = {
+    Camry: 'XSE',
+    RAV4: 'Hybrid XLE',
+    Highlander: 'Platinum',
+    Supra: '3.0 Premium',
+    BZ4X: 'Limited',
+    Prius: 'XLE Nightshade',
+    '4Runner': 'TRD Pro',
+    Tacoma: 'Limited',
+    Sienna: 'Platinum',
+  };
+
+  const bodies = {
+    Camry: 'Sedan',
+    RAV4: 'SUV',
+    Highlander: 'SUV',
+    Supra: 'Coupe',
+    BZ4X: 'SUV',
+    Prius: 'Hatchback',
+    '4Runner': 'SUV',
+    Tacoma: 'Truck',
+    Sienna: 'Minivan',
+  };
+
+  const engines = {
+    Camry: '2.5L I4',
+    RAV4: '2.5L Hybrid',
+    Highlander: '3.5L V6',
+    Supra: '3.0L Turbo I6',
+    BZ4X: 'Electric',
+    Prius: '1.8L Hybrid',
+    '4Runner': '4.0L V6',
+    Tacoma: '2.4L Turbo',
+    Sienna: '2.5L Hybrid',
+  };
+
+  const colors = ['White', 'Silver', 'Black', 'Red', 'Blue', 'Gray', 'Green', 'Blue', 'White'];
+  const interest = [3.5, 3.2, 3.8, 4.0, 2.9, 2.7, 4.2, 3.6, 3.1];
+
+  const models = Object.keys(msrp);
+  const cars = [];
+  for (const model of models) {
+    const key = model as keyof typeof msrp;
+    for (let year = 2025; year >= 2020; year--) {
+      cars.push({
         make: 'Toyota',
-        model: 'Camry',
-        year: 2024,
-        trim: 'XSE',
-        body: 'Sedan',
-        engine: '2.5L I4',
-        color: 'White',
-        cost: 32000,
-        interest: 3.5,
-      },
-      {
-        make: 'Toyota',
-        model: 'RAV4',
-        year: 2024,
-        trim: 'Hybrid XLE',
-        body: 'SUV',
-        engine: '2.5L Hybrid',
-        color: 'Silver',
-        cost: 35000,
-        interest: 3.2,
-      },
-      {
-        make: 'Toyota',
-        model: 'Highlander',
-        year: 2025,
-        trim: 'Platinum',
-        body: 'SUV',
-        engine: '3.5L V6',
-        color: 'Black',
-        cost: 45000,
-        interest: 3.8,
-      },
-      {
-        make: 'Toyota',
-        model: 'Supra',
-        year: 2023,
-        trim: '3.0 Premium',
-        body: 'Coupe',
-        engine: '3.0L Turbo I6',
-        color: 'Red',
-        cost: 55000,
-        interest: 4.0,
-      },
-      {
-        make: 'Toyota',
-        model: 'BZ4X',
-        year: 2025,
-        trim: 'Limited',
-        body: 'SUV',
-        engine: 'Electric',
-        color: 'Blue',
-        cost: 42000,
-        interest: 2.9,
-      },
-      {
-        make: 'Toyota',
-        model: 'Prius',
-        year: 2022,
-        trim: 'XLE Nightshade',
-        body: 'Hatchback',
-        engine: '1.8L Hybrid',
-        color: 'Gray',
-        cost: 28000,
-        interest: 2.7,
-      },
-      {
-        make: 'Toyota',
-        model: '4Runner',
-        year: 2024,
-        trim: 'TRD Pro',
-        body: 'SUV',
-        engine: '4.0L V6',
-        color: 'Green',
-        cost: 50000,
-        interest: 4.2,
-      },
-      {
-        make: 'Toyota',
-        model: 'Tacoma',
-        year: 2025,
-        trim: 'Limited',
-        body: 'Truck',
-        engine: '2.4L Turbo',
-        color: 'Blue',
-        cost: 39000,
-        interest: 3.6,
-      },
-      {
-        make: 'Toyota',
-        model: 'Sienna',
-        year: 2025,
-        trim: 'Platinum',
-        body: 'Minivan',
-        engine: '2.5L Hybrid',
-        color: 'White',
-        cost: 41000,
-        interest: 3.1,
-      },
-    ],
-  });
+        model,
+        year,
+        trim: trims[key],
+        body: bodies[key],
+        engine: engines[key],
+        color: colors[models.indexOf(model)],
+        cost: msrp[key] - (2025 - year) * 1200,
+        interest: interest[models.indexOf(model)],
+      });
+    }
+  }
+
+  await prisma.car.createMany({ data: cars });
 }
 
 main()
