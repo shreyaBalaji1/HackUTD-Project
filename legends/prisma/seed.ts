@@ -58,6 +58,19 @@ async function main() {
   const colors = ['White', 'Silver', 'Black', 'Red', 'Blue', 'Gray', 'Green', 'Blue', 'White'];
   const interest = [3.5, 3.2, 3.8, 4.0, 2.9, 2.7, 4.2, 3.6, 3.1];
 
+  // Fuel types for each model
+  const fuels = {
+    Camry: 'Gasoline',
+    RAV4: 'Hybrid',
+    Highlander: 'Gasoline',
+    Supra: 'Gasoline',
+    BZ4X: 'Electric',
+    Prius: 'Hybrid',
+    '4Runner': 'Gasoline',
+    Tacoma: 'Gasoline',
+    Sienna: 'Hybrid',
+  };
+
   const models = Object.keys(msrp);
   const cars = [];
   for (const model of models) {
@@ -70,6 +83,7 @@ async function main() {
         trim: trims[key],
         body: bodies[key],
         engine: engines[key],
+        fuel: fuels[key],
         color: colors[models.indexOf(model)],
         cost: msrp[key] - (2025 - year) * 1200,
         interest: interest[models.indexOf(model)],

@@ -24,6 +24,7 @@ model Car {
   trim     String?
   body     String?
   engine   String?
+  fuel     String?
   color    String?
   cost     Int
   interest Float
