@@ -12,6 +12,14 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 
 export default function CalculatorPage() {
   const [carPrice, setCarPrice] = useState("");
@@ -21,7 +29,7 @@ export default function CalculatorPage() {
   const [baseRate, setBaseRate] = useState(4.0);
   const [results, setResults] = useState([]);
   const [mode, setMode] = useState("finance"); // finance | lease
-  const [leaseTerm, setLeaseTerm] = useState(36); // 24, 36, or 48
+  const [leaseTerm, setLeaseTerm] = useState(36); // 24, 36, 48
 
   // 🧮 Finance Calculation
   const calculateFinance = (customRate = baseRate) => {
@@ -72,14 +80,14 @@ export default function CalculatorPage() {
   const calculateLease = () => {
     const price = parseFloat(carPrice) || 0;
     const down = parseFloat(downPayment) || 0;
-    const months = leaseTerm; // selected lease term
+    const months = leaseTerm;
     if (price <= 0) {
       alert("Please enter a valid car price.");
       return;
     }
 
-    const residual = price * 0.55; // 55% residual value
-    const moneyFactor = baseRate / 2400; // convert APR -> money factor
+    const residual = price * 0.55;
+    const moneyFactor = baseRate / 2400;
     const depreciation = (price - residual - down) / months;
     const interest = (price + residual) * moneyFactor;
     const leasePayment = depreciation + interest;
@@ -103,8 +111,11 @@ export default function CalculatorPage() {
     else calculateLease();
   };
 
+  // Colors for chart
+  const COLORS = ["#2563eb", "#dc2626"]; // blue + red
+
   return (
-    <div className="max-w-3xl mx-auto p-6">
+    <div className="max-w-4xl mx-auto p-6">
       <h1 className="text-3xl font-semibold text-center mb-6 text-red-600">
         💰 Car {mode === "finance" ? "Payment" : "Lease"} Calculator
       </h1>
@@ -215,7 +226,7 @@ export default function CalculatorPage() {
             )}
           </div>
 
-          {/* Interest / Money Factor Slider */}
+          {/* Interest / Rate Slider */}
           <div>
             <label className="text-sm font-medium block mb-2">
               Adjust Base {mode === "finance" ? "Interest" : "Money Factor"} Rate:{" "}
@@ -243,7 +254,7 @@ export default function CalculatorPage() {
             {mode === "finance" ? "Compare Financing Rates" : "Estimate Lease"}
           </Button>
 
-          {/* Results Table */}
+          {/* 📊 Results Table */}
           {results.length > 0 && (
             <div className="mt-8">
               <h2 className="text-2xl font-semibold text-center mb-4">
@@ -285,6 +296,52 @@ export default function CalculatorPage() {
                   </tbody>
                 </table>
               </div>
+
+              {/* 💹 Payment Breakdown Chart (Finance Only) */}
+              {mode === "finance" && (
+                <div className="mt-12 text-center">
+                  <h3 className="text-2xl font-semibold text-red-600 mb-4">
+                    💹 Payment Breakdown
+                  </h3>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <PieChart>
+                      <Pie
+                        dataKey="value"
+                        data={[
+                          {
+                            name: "Principal",
+                            value:
+                              parseFloat(carPrice) - parseFloat(downPayment || "0"),
+                          },
+                          {
+                            name: "Interest",
+                            value: parseFloat(results[0]?.interest || "0"),
+                          },
+                        ]}
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={100}
+                        label={({ name, percent }) =>
+                          `${name} ${(percent * 100).toFixed(0)}%`
+                        }
+                      >
+                        {COLORS.map((color, index) => (
+                          <Cell key={`cell-${index}`} fill={color} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+
+                  <p className="mt-3 text-gray-700">
+                    Total Loan Cost:{" "}
+                    <span className="font-semibold text-black">
+                      ${parseFloat(results[0]?.total || "0").toLocaleString()}
+                    </span>
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </CardContent>
