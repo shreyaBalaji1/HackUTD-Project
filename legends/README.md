@@ -2,23 +2,60 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-### Seed the Database (for Demo Data)
-
-After cloning the repo and installing dependencies, run the following command to populate the database with demo car data:
+### 1. Install Dependencies
 
 ```bash
-npx prisma db seed --preview-feature
+npm install
 ```
 
-If the above does not work, you can run:
+### 2. Set Up the Database
+
+Create the database and run migrations:
 
 ```bash
-ts-node prisma/seed.ts
+npx prisma migrate dev
 ```
 
-This will ensure everyone sees the same cars in the app.
+### 3. Seed the Database (Important!)
 
-First, run the development server:
+Populate the database with demo car data so everyone sees the same cars:
+
+**Try this first:**
+
+```bash
+npx prisma db seed
+```
+
+**If you get an error, try one of these alternatives:**
+
+Option A - Use tsx (recommended):
+
+```bash
+npm install -D tsx
+npx tsx prisma/seed.ts
+```
+
+Option B - Use Node directly (if seed.ts is converted to .js):
+
+```bash
+node prisma/seed.ts
+```
+
+Option C - Use ts-node with loader:
+
+```bash
+npx ts-node --esm prisma/seed.ts
+```
+
+**Verify the seed worked:**
+
+```bash
+npx prisma studio
+```
+
+This opens a browser UI to see your database. You should see Toyota cars from 2020-2025.
+
+### 4. Run the Development Server
 
 ```bash
 npm run dev

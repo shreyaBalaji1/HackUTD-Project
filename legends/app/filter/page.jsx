@@ -15,17 +15,11 @@ import {
 import { Slider } from "@/components/ui/slider";
 import { Search, Heart } from "lucide-react";
 
-const carsData = [
-  { model: "Tesla Model 3", year: 2023, type: "Sedan", fuel: "Electric", engine: "EV", cost: 45000, interest: 3.5 },
-  { model: "Ford Mustang", year: 2021, type: "Coupe", fuel: "Gasoline", engine: "V8", cost: 55000, interest: 4.0 },
-  { model: "Toyota Corolla", year: 2022, type: "Sedan", fuel: "Hybrid", engine: "I4", cost: 25000, interest: 2.9 },
-  { model: "BMW X5", year: 2020, type: "SUV", fuel: "Diesel", engine: "V6", cost: 62000, interest: 4.5 },
-];
-
 export default function CarFilterPage() {
   const [query, setQuery] = useState("");
   const [favorites, setFavorites] = useState([]);
   const [compareList, setCompareList] = useState([]);
+  const [carsData, setCarsData] = useState([]);
 
   const [filters, setFilters] = useState({
     cost: [0, 100000],
@@ -38,6 +32,12 @@ export default function CarFilterPage() {
   useEffect(() => {
     setFavorites(JSON.parse(localStorage.getItem("favorites") || "[]"));
     setCompareList(JSON.parse(localStorage.getItem("compareCars") || "[]"));
+    
+    // Fetch cars from database
+    fetch("/api/cars")
+      .then((res) => res.json())
+      .then((data) => setCarsData(data))
+      .catch((err) => console.error("Failed to fetch cars:", err));
   }, []);
 
   useEffect(() => {
@@ -46,9 +46,9 @@ export default function CarFilterPage() {
 
   const toggleFavorite = (car) => {
     setFavorites((prev) => {
-      const exists = prev.some((fav) => fav.model === car.model);
+      const exists = prev.some((fav) => fav.id === car.id);
       const updated = exists
-        ? prev.filter((c) => c.model !== car.model)
+        ? prev.filter((c) => c.id !== car.id)
         : [...prev, car];
       localStorage.setItem("favorites", JSON.stringify(updated));
       return updated;
@@ -57,27 +57,43 @@ export default function CarFilterPage() {
 
   const toggleCompare = (car) => {
     setCompareList((prev) => {
-      const exists = prev.some((c) => c.model === car.model);
-      if (exists) return prev.filter((c) => c.model !== car.model);
+      const exists = prev.some((c) => c.id === car.id);
+      if (exists) return prev.filter((c) => c.id !== car.id);
       if (prev.length >= 3) return prev;
       return [...prev, car];
     });
   };
 
   const filteredCars = carsData.filter((car) => {
+    const carModel = car.model || "";
+    const carBody = car.body || "";
+    const carFuel = car.fuel || "";
+    const carEngine = car.engine || "";
+    
     return (
-      car.model.toLowerCase().includes(query.toLowerCase()) &&
+      carModel.toLowerCase().includes(query.toLowerCase()) &&
       car.cost >= filters.cost[0] &&
       car.cost <= filters.cost[1] &&
       (filters.year === "" || car.year === Number(filters.year)) &&
-      (filters.type === "" || car.type === filters.type) &&
-      (filters.fuel === "" || car.fuel === filters.fuel) &&
-      (filters.engine === "" || car.engine === filters.engine)
+      (filters.type === "" || carBody === filters.type) &&
+      (filters.fuel === "" || carFuel === filters.fuel) &&
+      (filters.engine === "" || carEngine.includes(filters.engine))
     );
   });
 
   const setFilter = (key, value) =>
     setFilters((prev) => ({ ...prev, [key]: value }));
+
+  const resetFilters = () => {
+    setFilters({
+      cost: [0, 100000],
+      year: "",
+      type: "",
+      fuel: "",
+      engine: "",
+    });
+    setQuery("");
+  };
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -102,10 +118,18 @@ export default function CarFilterPage() {
 
         {/* Filters */}
         <Card className="mb-10 bg-white shadow-lg border border-gray-200">
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-lg font-semibold tracking-tight">
               Filter Options
             </CardTitle>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={resetFilters}
+              className="text-sm"
+            >
+              Reset Filters
+            </Button>
           </CardHeader>
 
           <CardContent className="grid md:grid-cols-3 gap-6">
@@ -202,9 +226,9 @@ export default function CarFilterPage() {
 
         {/* Results */}
         <div className="space-y-8">
-          {filteredCars.map((car, i) => (
+          {filteredCars.map((car) => (
             <Card
-              key={i}
+              key={car.id}
               className="flex flex-col md:flex-row items-center md:items-start gap-6 p-6 border border-gray-200 rounded-2xl bg-white shadow-md hover:shadow-xl transition"
             >
               {/* Image */}
@@ -225,7 +249,7 @@ export default function CarFilterPage() {
                     <Heart
                       size={24}
                       stroke="red"
-                      fill={favorites.some((f) => f.model === car.model) ? "red" : "none"}
+                      fill={favorites.some((f) => f.id === car.id) ? "red" : "none"}
                       className="hover:scale-110 transition"
                     />
                   </button>
@@ -233,7 +257,7 @@ export default function CarFilterPage() {
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-1 text-sm text-gray-700">
                   <p>Year: {car.year}</p>
-                  <p>Type: {car.type}</p>
+                  <p>Type: {car.body || "N/A"}</p>
                   <p>Fuel: {car.fuel}</p>
                   <p>Engine: {car.engine}</p>
                   <p className="font-semibold text-gray-900">
@@ -245,7 +269,7 @@ export default function CarFilterPage() {
                 <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
                   <input
                     type="checkbox"
-                    checked={compareList.some((c) => c.model === car.model)}
+                    checked={compareList.some((c) => c.id === car.id)}
                     onChange={() => toggleCompare(car)}
                     className="accent-red-500 cursor-pointer"
                   />
