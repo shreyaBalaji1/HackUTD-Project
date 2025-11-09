@@ -4,32 +4,62 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
 
 export default function CalculatorPage() {
   const [carPrice, setCarPrice] = useState("");
   const [downPayment, setDownPayment] = useState("");
-  const [interestRate, setInterestRate] = useState("");
   const [loanTerm, setLoanTerm] = useState("");
   const [creditScore, setCreditScore] = useState("");
-  const [monthlyPayment, setMonthlyPayment] = useState(null);
+  const [baseRate, setBaseRate] = useState(4.0); // Slider-controlled base rate
+  const [results, setResults] = useState([]);
 
-  const calculate = () => {
-    const price = parseFloat(carPrice);
-    const down = parseFloat(downPayment);
-    const rate = parseFloat(interestRate) / 100 / 12;
-    const months = parseInt(loanTerm) * 12;
-
-    if (!price || !down || !rate || !months) return;
-
+  const calculate = (customRate = baseRate) => {
+    const price = parseFloat(carPrice) || 0;
+    const down = parseFloat(downPayment) || 0;
+    const months = (parseInt(loanTerm) || 0) * 12;
     const loanAmount = price - down;
-    const monthly =
-      (loanAmount * rate) / (1 - Math.pow(1 + rate, -months));
 
-    let creditAdjustment = 0;
-    if (creditScore < 600) creditAdjustment = 50;
-    else if (creditScore < 700) creditAdjustment = 25;
+    if (price <= 0 || months <= 0) {
+      alert("Please enter a valid car price and loan term.");
+      return;
+    }
 
-    setMonthlyPayment((monthly + creditAdjustment).toFixed(2));
+    // Define lenders relative to slider base rate
+    const lenders = [
+      { name: "Bank A", rate: customRate - 0.3 },
+      { name: "Bank B", rate: customRate },
+      { name: "Dealer Financing", rate: customRate + 0.8 },
+    ];
+
+    // Credit score adjustment
+    const score = parseInt(creditScore) || 700;
+    let adjustment = 0;
+    if (score < 600) adjustment = 0.7;
+    else if (score < 700) adjustment = 0.3;
+
+    const results = lenders.map((lender) => {
+      const rate = (lender.rate + adjustment) / 100 / 12;
+      const monthly = (loanAmount * rate) / (1 - Math.pow(1 + rate, -months));
+      const total = monthly * months;
+      const interest = total - loanAmount;
+
+      return {
+        ...lender,
+        adjustedRate: (lender.rate + adjustment).toFixed(2),
+        monthly: monthly.toFixed(2),
+        total: total.toFixed(2),
+        interest: interest.toFixed(2),
+      };
+    });
+
+    // Find best deal
+    const bestDeal = results.reduce((best, curr) =>
+      parseFloat(curr.total) < parseFloat(best.total) ? curr : best
+    );
+    results.forEach((r) => (r.isBest = r.name === bestDeal.name));
+
+    setResults(results);
   };
 
   return (
@@ -41,11 +71,11 @@ export default function CalculatorPage() {
       <Card className="border-2 border-red-600 bg-white text-black shadow-md rounded-xl">
         <CardHeader>
           <CardTitle className="text-xl font-semibold text-center">
-            Estimate Your Monthly Payment
+            Compare Financing Options
           </CardTitle>
         </CardHeader>
 
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium">Car Price ($)</label>
@@ -70,17 +100,6 @@ export default function CalculatorPage() {
             </div>
 
             <div>
-              <label className="text-sm font-medium">Interest Rate (%)</label>
-              <Input
-                type="number"
-                value={interestRate}
-                onChange={(e) => setInterestRate(e.target.value)}
-                placeholder="e.g. 4.5"
-                className="border border-black"
-              />
-            </div>
-
-            <div>
               <label className="text-sm font-medium">Loan Term (years)</label>
               <Input
                 type="number"
@@ -91,8 +110,8 @@ export default function CalculatorPage() {
               />
             </div>
 
-            <div className="md:col-span-2">
-              <label className="text-sm font-medium">Credit Score</label>
+            <div>
+              <label className="text-sm font-medium">Credit Score (optional)</label>
               <Input
                 type="number"
                 value={creditScore}
@@ -103,21 +122,76 @@ export default function CalculatorPage() {
             </div>
           </div>
 
+          {/* 🔹 Interest Rate Slider */}
+          <div>
+            <label className="text-sm font-medium block mb-2">
+              Adjust Base Interest Rate: <span className="font-semibold">{baseRate.toFixed(1)}%</span>
+            </label>
+            <Slider
+              min={2.0}
+              max={8.0}
+              step={0.1}
+              value={[baseRate]}
+              onValueChange={(val) => {
+                setBaseRate(val[0]);
+                calculate(val[0]); // Recalculate live
+              }}
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Move the slider to simulate changing market rates.
+            </p>
+          </div>
+
           <Button
-            onClick={calculate}
+            onClick={() => calculate()}
             className="w-full bg-red-600 hover:bg-red-700 text-white mt-4"
           >
-            Calculate Payment
+            Compare Rates
           </Button>
 
-          {monthlyPayment && (
-            <div className="mt-6 text-center">
-              <h2 className="text-2xl font-semibold text-black">
-                Estimated Monthly Payment:
+          {/* 📊 Results Table */}
+          {results.length > 0 && (
+            <div className="mt-8">
+              <h2 className="text-2xl font-semibold text-center mb-4">
+                📊 Financing Comparison
               </h2>
-              <p className="text-3xl font-bold text-red-600 mt-2">
-                ${monthlyPayment}
-              </p>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-center border border-gray-300 rounded-lg">
+                  <thead className="bg-red-600 text-white">
+                    <tr>
+                      <th className="p-3">Lender</th>
+                      <th className="p-3">Interest Rate (%)</th>
+                      <th className="p-3">Monthly Payment ($)</th>
+                      <th className="p-3">Total Cost ($)</th>
+                      <th className="p-3">Interest Paid ($)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {results.map((r, i) => (
+                      <tr
+                        key={i}
+                        className={`border-b hover:bg-gray-50 ${
+                          r.isBest ? "bg-green-100" : ""
+                        }`}
+                      >
+                        <td className="p-3 font-semibold">
+                          {r.name}{" "}
+                          {r.isBest && (
+                            <span className="ml-2 text-sm bg-green-600 text-white px-2 py-1 rounded-full">
+                              💸 Best Deal
+                            </span>
+                          )}
+                        </td>
+                        <td className="p-3">{r.adjustedRate}</td>
+                        <td className="p-3 text-red-600 font-semibold">{r.monthly}</td>
+                        <td className="p-3">{parseFloat(r.total).toLocaleString()}</td>
+                        <td className="p-3">{parseFloat(r.interest).toLocaleString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </CardContent>
