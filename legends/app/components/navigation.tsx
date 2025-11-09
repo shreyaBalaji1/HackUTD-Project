@@ -34,7 +34,7 @@ export function Navigation() {
     <nav className="bg-red-600 text-white py-4 shadow-md sticky top-0 z-50">
       <div className="max-w-6xl mx-auto flex justify-between items-center px-4">
         {/* App Name */}
-        <h1 className="font-bold text-lg tracking-wide">🚗 Car App</h1>
+        <h1 className="font-bold text-lg tracking-wide">🚗 Toyota Vehicle App</h1>
 
         {/* Nav Links */}
         <div className="flex items-center space-x-6">
