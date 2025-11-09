@@ -5,40 +5,98 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
-// 🔹 Same car data used in your Filter and Car Detail pages
-const carsData = [
-  { model: "Tesla Model 3", year: 2023, type: "Sedan", fuel: "Electric", engine: "EV", cost: 45000 },
-  { model: "Ford Mustang", year: 2021, type: "Coupe", fuel: "Gasoline", engine: "V8", cost: 55000 },
-  { model: "Toyota Corolla", year: 2022, type: "Sedan", fuel: "Hybrid", engine: "I4", cost: 25000 },
-  { model: "BMW X5", year: 2020, type: "SUV", fuel: "Diesel", engine: "V6", cost: 62000 },
-  { model: "Hyundai Ioniq 6", year: 2023, type: "Sedan", fuel: "Electric", engine: "EV", cost: 48000 },
-  { model: "Polestar 2", year: 2023, type: "Sedan", fuel: "Electric", engine: "EV", cost: 47000 },
-  { model: "Honda Civic", year: 2022, type: "Sedan", fuel: "Gasoline", engine: "I4", cost: 24000 },
-  { model: "Audi Q7", year: 2021, type: "SUV", fuel: "Diesel", engine: "V6", cost: 65000 },
-];
-
 export default function FavoritesPage() {
   const [favorites, setFavorites] = useState([]);
+  const [carsData, setCarsData] = useState([]);
 
   useEffect(() => {
     const stored = JSON.parse(localStorage.getItem("favorites") || "[]");
     setFavorites(stored);
+    
+    // Fetch cars from API to use for recommendations
+    async function fetchCars() {
+      try {
+        const res = await fetch("/api/cars");
+        const data = await res.json();
+        setCarsData(data);
+      } catch (err) {
+        console.error("Failed to fetch cars:", err);
+        setCarsData([]);
+      }
+    }
+    fetchCars();
   }, []);
 
-  const removeFavorite = (model) => {
-    const updated = favorites.filter((c) => c.model !== model);
+  const removeFavorite = (car) => {
+    const updated = favorites.filter((f) => f.id !== car.id);
     setFavorites(updated);
     localStorage.setItem("favorites", JSON.stringify(updated));
   };
 
-  // 🔹 Smart recommendations (from real cars)
+  // 🔹 Smart recommendations based on fuel type, car type, price range, and engine
   const getRecommendations = (car) => {
-    return carsData.filter(
-      (c) =>
-        c.model !== car.model &&
-        c.fuel === car.fuel &&
-        Math.abs(c.cost - car.cost) <= 10000
-    );
+    if (carsData.length === 0) return [];
+    
+    // Get fuel type - handle both fuel field and model-based inference
+    const carFuel = car.fuel || getFuelFromModel(car.model) || "Gasoline";
+    const carType = car.body || car.type || "";
+    const carCost = car.cost || 0;
+    const carEngine = car.engine || "";
+    
+    // Score cars based on similarity
+    const scored = carsData
+      .filter((c) => c.id !== car.id) // Exclude the favorite car itself
+      .map((c) => {
+        let score = 0;
+        const cFuel = c.fuel || getFuelFromModel(c.model) || "Gasoline";
+        const cType = c.body || c.type || "";
+        const cCost = c.cost || 0;
+        const cEngine = c.engine || "";
+        
+        // Fuel type match (highest priority)
+        if (cFuel === carFuel) score += 10;
+        
+        // Car type match
+        if (cType && carType && cType === carType) score += 5;
+        
+        // Price range similarity (within $10k)
+        const priceDiff = Math.abs(cCost - carCost);
+        if (priceDiff <= 10000) score += 5;
+        else if (priceDiff <= 20000) score += 2;
+        
+        // Engine similarity
+        if (cEngine && carEngine) {
+          const engineLower = cEngine.toLowerCase();
+          const carEngineLower = carEngine.toLowerCase();
+          if (engineLower.includes(carEngineLower) || carEngineLower.includes(engineLower)) {
+            score += 3;
+          }
+        }
+        
+        return { car: c, score };
+      })
+      .filter((item) => item.score > 0) // Only include cars with some similarity
+      .sort((a, b) => b.score - a.score) // Sort by score descending
+      .slice(0, 3) // Top 3 recommendations
+      .map((item) => item.car);
+    
+    return scored;
+  };
+  
+  // Helper to get fuel from model name (same as compare page)
+  const getFuelFromModel = (model) => {
+    const fuelMapping = {
+      'Camry': 'Gasoline',
+      'RAV4': 'Hybrid',
+      'Highlander': 'Gasoline',
+      'Supra': 'Gasoline',
+      'BZ4X': 'Electric',
+      'Prius': 'Hybrid',
+      '4Runner': 'Gasoline',
+      'Tacoma': 'Gasoline',
+      'Sienna': 'Hybrid',
+    };
+    return fuelMapping[model] || null;
   };
 
   if (favorites.length === 0) {
@@ -75,14 +133,15 @@ export default function FavoritesPage() {
                   <div className="flex-1 text-left space-y-2">
                     <h2 className="text-2xl font-bold">{car.model}</h2>
                     <p>Year: {car.year}</p>
-                    <p>Type: {car.type}</p>
-                    <p>Fuel: {car.fuel}</p>
-                    <p>Cost: ${car.cost.toLocaleString()}</p>
+                    <p>Type: {car.body || car.type || "N/A"}</p>
+                    <p>Fuel: {car.fuel || getFuelFromModel(car.model) || "N/A"}</p>
+                    <p>Engine: {car.engine || "N/A"}</p>
+                    <p>Cost: ${car.cost?.toLocaleString?.() ?? car.cost}</p>
 
                     <div className="flex gap-3 mt-3">
                       <Button
                         variant="destructive"
-                        onClick={() => removeFavorite(car.model)}
+                        onClick={() => removeFavorite(car)}
                         className="bg-red-600 hover:bg-red-700 text-white"
                       >
                         Remove
@@ -127,13 +186,13 @@ export default function FavoritesPage() {
                         <CardContent className="mt-2 text-center">
                           <p className="font-semibold">{r.model}</p>
                           <p className="text-sm text-gray-600">
-                            {r.year} • {r.type}
+                            {r.year} • {r.body || r.type || "N/A"}
                           </p>
                           <p className="text-sm text-gray-700 font-medium">
-                            ${r.cost.toLocaleString()}
+                            ${r.cost?.toLocaleString?.() ?? r.cost}
                           </p>
                           <Link
-                            href={`/car/${r.model.toLowerCase().replace(/\s+/g, "-")}`}
+                            href={`/filter`}
                             className="text-red-600 hover:underline text-sm mt-1 block"
                           >
                             View Details

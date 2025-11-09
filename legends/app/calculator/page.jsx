@@ -27,8 +27,8 @@ export default function CalculatorPage() {
 
     // Define lenders relative to slider base rate
     const lenders = [
-      { name: "Bank A", rate: customRate - 0.3 },
-      { name: "Bank B", rate: customRate },
+      { name: "Chase Auto Finance", rate: customRate - 0.3 },
+      { name: "Wells Fargo Auto", rate: customRate },
       { name: "Dealer Financing", rate: customRate + 0.8 },
     ];
 
@@ -171,22 +171,35 @@ export default function CalculatorPage() {
                     {results.map((r, i) => (
                       <tr
                         key={i}
-                        className={`border-b hover:bg-gray-50 ${
-                          r.isBest ? "bg-green-100" : ""
+                        className={`border-b transition-colors ${
+                          r.isBest 
+                            ? "bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-400 shadow-md" 
+                            : "hover:bg-gray-50"
                         }`}
                       >
-                        <td className="p-3 font-semibold">
-                          {r.name}{" "}
-                          {r.isBest && (
-                            <span className="ml-2 text-sm bg-green-600 text-white px-2 py-1 rounded-full">
-                              💸 Best Deal
-                            </span>
-                          )}
+                        <td className="p-4 font-semibold">
+                          <div className="flex items-center gap-3">
+                            <span className={r.isBest ? "text-green-700" : ""}>{r.name}</span>
+                            {r.isBest && (
+                              <span className="inline-flex items-center gap-1.5 bg-gradient-to-r from-green-600 to-emerald-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg border border-green-700">
+                                <span>⭐</span>
+                                <span>BEST DEAL</span>
+                              </span>
+                            )}
+                          </div>
                         </td>
-                        <td className="p-3">{r.adjustedRate}</td>
-                        <td className="p-3 text-red-600 font-semibold">{r.monthly}</td>
-                        <td className="p-3">{parseFloat(r.total).toLocaleString()}</td>
-                        <td className="p-3">{parseFloat(r.interest).toLocaleString()}</td>
+                        <td className={`p-4 ${r.isBest ? "text-green-700 font-semibold" : ""}`}>
+                          {r.adjustedRate}%
+                        </td>
+                        <td className={`p-4 font-semibold ${r.isBest ? "text-green-700" : "text-red-600"}`}>
+                          ${r.monthly}
+                        </td>
+                        <td className={`p-4 ${r.isBest ? "text-green-700 font-semibold" : ""}`}>
+                          ${parseFloat(r.total).toLocaleString()}
+                        </td>
+                        <td className={`p-4 ${r.isBest ? "text-green-700 font-semibold" : ""}`}>
+                          ${parseFloat(r.interest).toLocaleString()}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
