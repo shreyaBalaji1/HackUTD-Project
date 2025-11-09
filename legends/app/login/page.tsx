@@ -1,7 +1,45 @@
 "use client";
 import Image from "next/image";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function HomePage() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      const response = await fetch("http://localhost:5001/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Redirect to filter page with user info
+        router.push(`/filter?user=${encodeURIComponent(data.user.displayName)}`);
+      } else {
+        setError(data.error || "Login failed. Please try again.");
+      }
+    } catch (err) {
+      setError("Cannot connect to server. Please make sure the server is running.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-red-500 via-white-500 to-black-100 text-gray-800">
       <div className="bg-white rounded-xl shadow-xl border border-blue-400 p-10 w-96 text-center">
@@ -16,12 +54,21 @@ export default function HomePage() {
 
         <h2 className="text-2xl font-bold mb-6">Login</h2>
 
-        <form className="flex flex-col gap-3 text-left">
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-md text-sm">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3 text-left">
           <div>
             <label className="text-sm font-medium text-gray-700">Email</label>
             <input
               type="email"
               placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
               className="w-full border border-gray-300 rounded-md p-2 mt-1 focus:ring-2 focus:ring-blue-400 outline-none"
             />
           </div>
@@ -33,17 +80,31 @@ export default function HomePage() {
             <input
               type="password"
               placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
               className="w-full border border-gray-300 rounded-md p-2 mt-1 focus:ring-2 focus:ring-blue-400 outline-none"
             />
           </div>
 
           <button
             type="submit"
-            className="w-full mt-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
+            disabled={loading}
+            className="w-full mt-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Log In
+            {loading ? "Logging in..." : "Log In"}
           </button>
         </form>
+
+        {/* Sign up link */}
+        <div className="mt-4 text-center">
+          <p className="text-sm text-gray-600">
+            Don't have an account?{" "}
+            <a href="/signup" className="text-red-600 hover:text-red-700 font-medium underline">
+              Sign up
+            </a>
+          </p>
+        </div>
 
         {/* Divider */}
         <div className="flex items-center gap-2 my-4">
@@ -52,7 +113,10 @@ export default function HomePage() {
           <hr className="flex-grow border-gray-300" />
         </div>
 
-        <button className="flex items-center justify-center gap-3 w-full border border-gray-300 rounded-full py-2 hover:bg-gray-100 transition">
+        <a
+          href="http://localhost:5001/auth/google"
+          className="flex items-center justify-center gap-3 w-full border border-gray-300 rounded-full py-2 hover:bg-gray-100 transition cursor-pointer"
+        >
           <Image
             src="https://www.svgrepo.com/show/475656/google-color.svg"
             alt="Google Icon"
@@ -62,7 +126,8 @@ export default function HomePage() {
           <span className="font-medium text-gray-700">
             Continue with Google
           </span>
-        </button>
+        </a>
+
       </div>
     </div>
   );

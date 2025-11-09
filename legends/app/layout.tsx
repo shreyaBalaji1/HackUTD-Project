@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { Navigation } from "./components/navigation";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Car Filter",
-  description: "Find your car by model, year, type, and more.",
+  title: "Toyota Vehicle Tool",
+  description: "Find your car, calculate payments, and more.",
 };
 
 export default function RootLayout({
@@ -27,10 +28,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white text-black min-h-screen`}
       >
-        <main className="min-h-screen bg-white text-black">
-          {children}
-        </main>
+        <Navigation />
+        {/* Page Content */}
+        <main className="min-h-screen bg-white text-black p-6">{children}</main>
       </body>
     </html>
   );
 }
+

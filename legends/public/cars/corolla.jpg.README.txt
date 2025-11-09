@@ -1,0 +1,2 @@
+// Corolla image placeholder. Download the image from the provided URL and place it in the public/cars directory as corolla.jpg.
+// Source: https://www.usatoday.com/gcdn/media/USATODAY/USATODAY/2013/06/06/1370558251000-Corolla-S-Red-1306061838_16_9.jpg?width=660&height=374&fit=crop&format=pjpg&auto=webp

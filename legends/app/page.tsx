@@ -1,333 +1,124 @@
 // Updated Toyota-style car filter page with sidebar filtering
 "use client";
-
+import Image from "next/image";
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
-import { Search } from "lucide-react";
+import { useRouter } from "next/navigation";
 
-const carsData = [
-  {
-    model: "Tesla Model 3",
-    year: 2023,
-    type: "Sedan",
-    fuel: "Electric",
-    engine: "EV",
-    cost: 45000,
-    interest: 3.5,
-  },
-  {
-    model: "Ford Mustang",
-    year: 2021,
-    type: "Coupe",
-    fuel: "Gasoline",
-    engine: "V8",
-    cost: 55000,
-    interest: 4.0,
-  },
-  {
-    model: "Toyota Corolla",
-    year: 2022,
-    type: "Sedan",
-    fuel: "Hybrid",
-    engine: "I4",
-    cost: 25000,
-    interest: 2.9,
-  },
-  {
-    model: "BMW X5",
-    year: 2020,
-    type: "SUV",
-    fuel: "Diesel",
-    engine: "V6",
-    cost: 62000,
-    interest: 4.5,
-  },
-];
+export default function HomePage() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
-// Toyota-style Navbar component
-function ToyotaNavbar() {
-  return (
-    <nav className="w-full border-b bg-white px-6 py-3 flex items-center justify-between sticky top-0 z-50">
-      <div className="flex items-center gap-2">
-        <img src="/logo.png" alt="Toyota" className="h-8 w-auto" />
-        <span className="text-xl font-semibold">Toyota</span>
-      </div>
-      <ul className="hidden md:flex gap-6 text-sm font-medium">
-        <li className="hover:text-red-600 cursor-pointer">Vehicles</li>
-        <li className="hover:text-red-600 cursor-pointer">Shopping Tools</li>
-        <li className="hover:text-red-600 cursor-pointer">Certified</li>
-        <li className="hover:text-red-600 cursor-pointer">More</li>
-      </ul>
-      <button className="text-sm border px-3 py-1 rounded hover:bg-gray-100">
-        Sign In
-      </button>
-    </nav>
-  );
-}
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
 
-export default function CarFilterPage() {
-  const [query, setQuery] = useState("");
-  const [filters, setFilters] = useState({
-    cost: [0, 100000],
-    year: "",
-    type: "",
-    fuel: "",
-    engine: "",
-    interest: "",
-  });
+    try {
+      const response = await fetch("http://localhost:5001/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ email, password }),
+      });
 
-  const handleFilterChange = (key: string, value: any) => {
-    setFilters((prev) => ({ ...prev, [key]: value }));
-  };
+      const data = await response.json();
 
-  const applySidebarFilter = (category: string) => {
-    switch (category) {
-      case "crossovers":
-        handleFilterChange("type", "SUV");
-        break;
-      case "cars":
-        handleFilterChange("type", "Sedan");
-        break;
-      case "trucks":
-        handleFilterChange("type", "Truck");
-        break;
-      case "performance":
-        handleFilterChange("type", "Coupe");
-        break;
-      case "electrified":
-        handleFilterChange("fuel", "Electric");
-        break;
-      default:
-        break;
+      if (response.ok) {
+        // Redirect to dashboard with user info
+        router.push(`/dashboard?user=${encodeURIComponent(data.user.displayName)}`);
+      } else {
+        setError(data.error || "Login failed. Please try again.");
+      }
+    } catch (err) {
+      setError("Cannot connect to server. Please make sure the server is running.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const filteredCars = carsData.filter((car) => {
-    return (
-      car.model.toLowerCase().includes(query.toLowerCase()) &&
-      car.cost >= filters.cost[0] &&
-      car.cost <= filters.cost[1] &&
-      (filters.year === "" || car.year === Number(filters.year)) &&
-      (filters.type === "" || car.type === filters.type) &&
-      (filters.fuel === "" || car.fuel === filters.fuel) &&
-      (filters.engine === "" || car.engine === filters.engine) &&
-      (filters.interest === "" || car.interest <= Number(filters.interest))
-    );
-  });
-
   return (
-    <div className="flex min-h-screen">
-      {/* Sidebar */}
-      <aside className="w-64 border-r p-6 space-y-4">
-        <h2 className="text-xl font-semibold mb-4">Vehicles</h2>
-        <ul className="space-y-2">
-          <li>
-            <button
-              onClick={() => applySidebarFilter("crossovers")}
-              className="hover:text-red-600"
-            >
-              Crossovers & SUVs
-            </button>
-          </li>
-          <li>
-            <button
-              onClick={() => applySidebarFilter("cars")}
-              className="hover:text-red-600"
-            >
-              Cars & Minivan
-            </button>
-          </li>
-          <li>
-            <button
-              onClick={() => applySidebarFilter("trucks")}
-              className="hover:text-red-600"
-            >
-              Trucks
-            </button>
-          </li>
-          <li>
-            <button
-              onClick={() => applySidebarFilter("performance")}
-              className="hover:text-red-600"
-            >
-              Performance
-            </button>
-          </li>
-          <li>
-            <button
-              onClick={() => applySidebarFilter("electrified")}
-              className="hover:text-red-600"
-            >
-              Electrified
-            </button>
-          </li>
-        </ul>
-      </aside>
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-red-500 via-white-500 to-black-100 text-gray-800">
+      <div className="bg-white rounded-xl shadow-xl border border-blue-400 p-10 w-96 text-center">
+        <div className="flex flex-col items-center mb-6">
+          <Image src="/logo.png" alt="Toyota Logo" width={200} height={200} />
 
-      {/* Main Content */}
-      <div className="flex-1 p-6 max-w-6xl mx-auto">
-        <h1 className="text-3xl font-semibold mb-6 text-center">
-          Toyota Vehicle Search & Filter 🚗
-        </h1>
-
-        {/* Search Bar */}
-        <div className="flex items-center gap-2 mb-6">
-          <Input
-            placeholder="Search by model..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className="flex-1"
-          />
-          <Button variant="secondary">
-            <Search className="w-4 h-4 mr-2" /> Search
-          </Button>
-        </div>
-
-        {/* Filters */}
-        <Card className="mb-8 bg-white text-black border-2 border-red-600 shadow-md">
-          <CardHeader>
-            <CardTitle className="text-black">Filter Options</CardTitle>
-          </CardHeader>
-          <CardContent className="grid md:grid-cols-3 gap-4 text-black">
-            {/* Cost */}
-            <div>
-              <label className="text-sm font-medium">Cost Range ($)</label>
-              <Slider
-                min={0}
-                max={100000}
-                step={5000}
-                value={filters.cost}
-                onValueChange={(value) => handleFilterChange("cost", value)}
-              />
-              <p className="text-sm mt-1">
-                ${filters.cost[0]} - ${filters.cost[1]}
-              </p>
-            </div>
-
-            {/* Year */}
-            <div>
-              <label className="text-sm font-medium">Year</label>
-              <Select onValueChange={(v) => handleFilterChange("year", v)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select year" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">—</SelectItem>
-                  {[2025, 2024, 2023, 2022, 2021, 2020].map((yr) => (
-                    <SelectItem key={yr} value={yr.toString()}>
-                      {yr}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Type */}
-            <div>
-              <label className="text-sm font-medium">Type of Car</label>
-              <Select onValueChange={(v) => handleFilterChange("type", v)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">—</SelectItem>
-                  <SelectItem value="Sedan">Sedan</SelectItem>
-                  <SelectItem value="SUV">SUV</SelectItem>
-                  <SelectItem value="Coupe">Coupe</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Fuel */}
-            <div>
-              <label className="text-sm font-medium">Fuel Type</label>
-              <Select onValueChange={(v) => handleFilterChange("fuel", v)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select fuel" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">—</SelectItem>
-                  <SelectItem value="Gasoline">Gasoline</SelectItem>
-                  <SelectItem value="Diesel">Diesel</SelectItem>
-                  <SelectItem value="Hybrid">Hybrid</SelectItem>
-                  <SelectItem value="Electric">Electric</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Engine */}
-            <div>
-              <label className="text-sm font-medium">Engine</label>
-              <Select onValueChange={(v) => handleFilterChange("engine", v)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select engine" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">—</SelectItem>
-                  <SelectItem value="EV">EV</SelectItem>
-                  <SelectItem value="I4">I4</SelectItem>
-                  <SelectItem value="V6">V6</SelectItem>
-                  <SelectItem value="V8">V8</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Interest Rate */}
-            <div>
-              <label className="text-sm font-medium">Interest Rate (%)</label>
-              <Input
-                type="number"
-                placeholder="Enter interest rate"
-                onChange={(e) => handleFilterChange("interest", e.target.value)}
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Results */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredCars.map((car, i) => (
-            <Card key={i} className="hover:shadow-lg transition-all border">
-              <CardContent className="p-4">
-                <img
-                  src={`/cars/${car.model
-                    .toLowerCase()
-                    .replace(/\s+/g, "-")}.jpg`}
-                  alt={car.model}
-                  className="w-full h-48 object-cover rounded-lg mb-4 border"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = "/cars/default.jpg";
-                  }}
-                />
-                <h3 className="text-xl font-bold mb-2">{car.model}</h3>
-                <p>Year: {car.year}</p>
-                <p>Type: {car.type}</p>
-                <p>Fuel: {car.fuel}</p>
-                <p>Engine: {car.engine}</p>
-                <p className="font-semibold">
-                  Cost: ${car.cost.toLocaleString()}
-                </p>
-                <p>Interest: {car.interest}%</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {filteredCars.length === 0 && (
-          <p className="text-center text-gray-500 mt-6">
-            No cars match your filters.
+          <p className="text-gray-600 text-sm mt-1">
+            Look for your new dream car <br />
+            with ease all on one platform
           </p>
+        </div>
+
+        <h2 className="text-2xl font-bold mb-6">Login</h2>
+
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-md text-sm">
+            {error}
+          </div>
         )}
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3 text-left">
+          <div>
+            <label className="text-sm font-medium text-gray-700">Email</label>
+            <input
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="w-full border border-gray-300 rounded-md p-2 mt-1 focus:ring-2 focus:ring-blue-400 outline-none"
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-medium text-gray-700">
+              Password
+            </label>
+            <input
+              type="password"
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="w-full border border-gray-300 rounded-md p-2 mt-1 focus:ring-2 focus:ring-blue-400 outline-none"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full mt-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? "Logging in..." : "Log In"}
+          </button>
+        </form>
+
+        {/* Divider */}
+        <div className="flex items-center gap-2 my-4">
+          <hr className="flex-grow border-gray-300" />
+          <span className="text-gray-500 text-sm">or</span>
+          <hr className="flex-grow border-gray-300" />
+        </div>
+
+        <a
+          href="http://localhost:5001/auth/google"
+          className="flex items-center justify-center gap-3 w-full border border-gray-300 rounded-full py-2 hover:bg-gray-100 transition cursor-pointer"
+        >
+          <Image
+            src="https://www.svgrepo.com/show/475656/google-color.svg"
+            alt="Google Icon"
+            width={20}
+            height={20}
+          />
+          <span className="font-medium text-gray-700">
+            Continue with Google
+          </span>
+        </a>
+
       </div>
     </div>
   );

@@ -28,7 +28,9 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
-    "**/*.mts"
-  ],
+    "**/*.mts",
+    "app/calculator/page.jsx",
+    "app/filter/page.jsx"
+, "app/favorites/page.jsx", "app/compare/page.jsx"  ],
   "exclude": ["node_modules"]
 }

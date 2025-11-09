@@ -2,6 +2,22 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
+### Seed the Database (for Demo Data)
+
+After cloning the repo and installing dependencies, run the following command to populate the database with demo car data:
+
+```bash
+npx prisma db seed --preview-feature
+```
+
+If the above does not work, you can run:
+
+```bash
+ts-node prisma/seed.ts
+```
+
+This will ensure everyone sees the same cars in the app.
+
 First, run the development server:
 
 ```bash
