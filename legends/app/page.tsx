@@ -1,3 +1,4 @@
+// Updated Toyota-style car filter page with sidebar filtering
 "use client";
 import Image from "next/image";
 import { useState } from "react";
