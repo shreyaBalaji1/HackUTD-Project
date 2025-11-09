@@ -46,6 +46,12 @@ export function Navigation() {
 
         {/* RIGHT — SPREAD OUT NAV ITEMS */}
         <div className="flex items-center space-x-8 ml-auto">
+          <Link href="/ai-search" className={linkClass("/ai-search")}>
+            <span className="flex items-center gap-1">
+              ✨ AI Search
+            </span>
+          </Link>
+
           <Link href="/filter" className={linkClass("/filter")}>
             Filter
           </Link>
