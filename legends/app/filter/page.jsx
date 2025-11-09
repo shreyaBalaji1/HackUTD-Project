@@ -64,9 +64,9 @@ export default function CarFilterPage() {
   // ✅ Favorites logic
   const toggleFavorite = (car) => {
     setFavorites((prev) => {
-      const isFav = prev.some((fav) => fav.model === car.model);
+      const isFav = prev.some((fav) => fav.id === car.id);
       const updated = isFav
-        ? prev.filter((f) => f.model !== car.model)
+        ? prev.filter((f) => f.id !== car.id)
         : [...prev, car];
 
       localStorage.setItem("favorites", JSON.stringify(updated));
@@ -77,8 +77,8 @@ export default function CarFilterPage() {
   // ✅ Compare logic
   const toggleCompare = (car) => {
     setCompareList((prev) => {
-      const exists = prev.some((c) => c.model === car.model);
-      if (exists) return prev.filter((c) => c.model !== car.model);
+      const exists = prev.some((c) => c.id === car.id);
+      if (exists) return prev.filter((c) => c.id !== car.id);
       if (prev.length >= 3) return prev; // Limit to 3 cars
       return [...prev, car];
     });
@@ -90,7 +90,7 @@ export default function CarFilterPage() {
       car.cost >= filters.cost[0] &&
       car.cost <= filters.cost[1] &&
       (filters.year === "" || car.year === Number(filters.year)) &&
-      (filters.type === "" || car.type === filters.type) &&
+  (filters.type === "" || car.body === filters.type) &&
       (filters.fuel === "" || car.fuel === filters.fuel) &&
       (filters.engine === "" || car.engine === filters.engine)
     );
@@ -224,7 +224,7 @@ export default function CarFilterPage() {
                       <Heart
                         size={24}
                         stroke="red"
-                        fill={favorites.some((fav) => fav.model === car.model) ? "red" : "none"}
+                        fill={favorites.some((fav) => fav.id === car.id) ? "red" : "none"}
                         className="text-red-600 w-6 h-6"
                       />
                     </button>
@@ -233,10 +233,10 @@ export default function CarFilterPage() {
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-1 text-sm">
                   <p>Year: {car.year}</p>
-                  <p>Type: {car.type}</p>
-                  <p>Fuel: {car.fuel}</p>
+                  <p>Type: {car.body ? car.body : "N/A"}</p>
+                  <p>Fuel: {car.fuel ? car.fuel : "N/A"}</p>
                   <p>Engine: {car.engine}</p>
-                  <p className="font-semibold">Cost: ${car.cost.toLocaleString()}</p>
+                  <p className="font-semibold">Cost: ${car.cost?.toLocaleString?.() ?? car.cost}</p>
                   <p>Interest: {car.interest}%</p>
                 </div>
 
@@ -245,7 +245,7 @@ export default function CarFilterPage() {
                   <label className="flex items-center gap-2 text-sm">
                     <input
                       type="checkbox"
-                      checked={compareList.some((c) => c.model === car.model)}
+                      checked={compareList.some((c) => c.id === car.id)}
                       onChange={() => toggleCompare(car)}
                       className="accent-red-600 cursor-pointer"
                     />
