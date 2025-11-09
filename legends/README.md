@@ -1,5 +1,17 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## 🤖 AI Features
+
+This app now includes **AI-powered car shopping** features:
+
+- **🔍 Natural Language Search** - Search for cars using plain English (e.g., "affordable hybrid SUV for families")
+- **💬 AI Chat Assistant** - Floating chat button on every page answers car shopping questions
+- **🎯 Smart Recommendations** - AI learns your preferences and suggests cars you'll like
+
+👉 **[Read the full AI Features Guide](./AI_FEATURES.md)** for demo tips and technical details!
+
+---
+
 ## Getting Started
 
 ### 1. Install Dependencies
