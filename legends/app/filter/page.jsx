@@ -176,10 +176,9 @@ export default function CarFilterPage() {
               <Select onValueChange={(v) => handleFilterChange("engine", v)}>
                 <SelectTrigger><SelectValue placeholder="Select engine" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="EV">EV</SelectItem>
-                  <SelectItem value="I4">I4</SelectItem>
-                  <SelectItem value="V6">V6</SelectItem>
-                  <SelectItem value="V8">V8</SelectItem>
+                  {[...new Set(carsData.map(car => car.engine).filter(Boolean))].map((eng) => (
+                    <SelectItem key={eng} value={eng}>{eng}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
