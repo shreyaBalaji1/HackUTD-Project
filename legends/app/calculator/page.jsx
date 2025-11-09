@@ -1,7 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -20,6 +25,9 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import { Inter } from "next/font/google";
+
+const inter = Inter({ subsets: ["latin"] });
 
 export default function CalculatorPage() {
   const [carPrice, setCarPrice] = useState("");
@@ -28,20 +36,21 @@ export default function CalculatorPage() {
   const [creditScore, setCreditScore] = useState("");
   const [baseRate, setBaseRate] = useState(4.0);
   const [results, setResults] = useState([]);
-  const [mode, setMode] = useState("finance"); // finance | lease
-  const [leaseTerm, setLeaseTerm] = useState(36); // 24, 36, 48
+  const [mode, setMode] = useState("finance");
+  const [leaseTerm, setLeaseTerm] = useState(36);
 
-  // 🧮 Finance Calculation
+  // ------- calculations remain unchanged -------- //
   const calculateFinance = (customRate = baseRate) => {
     const price = parseFloat(carPrice) || 0;
     const down = parseFloat(downPayment) || 0;
     const months = (parseInt(loanTerm) || 0) * 12;
-    const loanAmount = price - down;
 
     if (price <= 0 || months <= 0) {
       alert("Please enter a valid car price and loan term.");
       return;
     }
+
+    const loanAmount = price - down;
 
     const lenders = [
       { name: "Chase Auto Finance", rate: customRate - 0.3 },
@@ -51,6 +60,7 @@ export default function CalculatorPage() {
 
     const score = parseInt(creditScore) || 700;
     let adjustment = 0;
+
     if (score < 600) adjustment = 0.7;
     else if (score < 700) adjustment = 0.3;
 
@@ -69,18 +79,19 @@ export default function CalculatorPage() {
       };
     });
 
-    const bestDeal = results.reduce((best, curr) =>
-      parseFloat(curr.total) < parseFloat(best.total) ? curr : best
+    const best = results.reduce((best, c) =>
+      parseFloat(c.total) < parseFloat(best.total) ? c : best
     );
-    results.forEach((r) => (r.isBest = r.name === bestDeal.name));
+
+    results.forEach((r) => (r.isBest = r.name === best.name));
     setResults(results);
   };
 
-  // 🚘 Lease Calculation
   const calculateLease = () => {
     const price = parseFloat(carPrice) || 0;
     const down = parseFloat(downPayment) || 0;
     const months = leaseTerm;
+
     if (price <= 0) {
       alert("Please enter a valid car price.");
       return;
@@ -102,7 +113,6 @@ export default function CalculatorPage() {
         isBest: true,
       },
     ];
-
     setResults(results);
   };
 
@@ -111,110 +121,81 @@ export default function CalculatorPage() {
     else calculateLease();
   };
 
-  // Colors for chart
-  const COLORS = ["#2563eb", "#dc2626"]; // blue + red
+  const COLORS = ["#1E3A8A", "#DC2626"];
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-3xl font-semibold text-center mb-6 text-red-600">
-        💰 Car {mode === "finance" ? "Payment" : "Lease"} Calculator
+    <div className={`${inter.className} max-w-4xl mx-auto p-6`}>
+      <h1 className="text-3xl font-semibold text-center mb-8 text-gray-800">
+        Car {mode === "finance" ? "Payment" : "Lease"} Calculator
       </h1>
 
-      <Card className="border-2 border-red-600 bg-white text-black shadow-md rounded-xl">
+      <Card className="border border-gray-200 shadow-lg rounded-2xl bg-white">
         <CardHeader>
-          <CardTitle className="text-xl font-semibold text-center">
+          <CardTitle className="text-xl font-semibold text-center text-gray-700">
             {mode === "finance"
-              ? "Compare Financing Options"
-              : "Estimate Your Lease Payment"}
+              ? "Financing Comparison"
+              : "Lease Payment Estimate"}
           </CardTitle>
         </CardHeader>
 
         <CardContent className="space-y-6">
-          {/* Toggle between Finance / Lease */}
-          <div className="flex justify-center mb-2">
-            <div className="flex bg-gray-100 rounded-full p-1 shadow-inner">
-              <button
-                onClick={() => setMode("finance")}
-                className={`px-4 py-1 rounded-full text-sm font-medium transition-all ${
-                  mode === "finance"
-                    ? "bg-red-600 text-white"
-                    : "text-gray-600 hover:text-red-600"
-                }`}
-              >
-                Finance
-              </button>
-              <button
-                onClick={() => setMode("lease")}
-                className={`px-4 py-1 rounded-full text-sm font-medium transition-all ${
-                  mode === "lease"
-                    ? "bg-red-600 text-white"
-                    : "text-gray-600 hover:text-red-600"
-                }`}
-              >
-                Lease
-              </button>
+          {/* Toggle */}
+          <div className="flex justify-center">
+            <div className="flex bg-gray-100 rounded-full p-1">
+              {["finance", "lease"].map((item) => (
+                <button
+                  key={item}
+                  onClick={() => setMode(item)}
+                  className={`px-5 py-1 rounded-full text-sm font-medium transition-all
+                    ${
+                      mode === item
+                        ? "bg-red-600 text-white shadow-sm"
+                        : "text-gray-600 hover:text-red-600"
+                    }`}
+                >
+                  {item === "finance" ? "Finance" : "Lease"}
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* Input Fields */}
+          {/* Inputs */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm font-medium">Car Price ($)</label>
-              <Input
-                type="number"
-                value={carPrice}
-                onChange={(e) => setCarPrice(e.target.value)}
-                placeholder="Enter total car cost"
-                className="border border-black"
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-medium">Down Payment ($)</label>
-              <Input
-                type="number"
-                value={downPayment}
-                onChange={(e) => setDownPayment(e.target.value)}
-                placeholder="Enter down payment"
-                className="border border-black"
-              />
-            </div>
+            <Field
+              label="Car Price ($)"
+              value={carPrice}
+              setValue={setCarPrice}
+            />
+            <Field
+              label="Down Payment ($)"
+              value={downPayment}
+              setValue={setDownPayment}
+            />
 
             {mode === "finance" ? (
               <>
-                <div>
-                  <label className="text-sm font-medium">Loan Term (years)</label>
-                  <Input
-                    type="number"
-                    value={loanTerm}
-                    onChange={(e) => setLoanTerm(e.target.value)}
-                    placeholder="e.g. 5"
-                    className="border border-black"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium">
-                    Credit Score (optional)
-                  </label>
-                  <Input
-                    type="number"
-                    value={creditScore}
-                    onChange={(e) => setCreditScore(e.target.value)}
-                    placeholder="e.g. 700"
-                    className="border border-black"
-                  />
-                </div>
+                <Field
+                  label="Loan Term (years)"
+                  value={loanTerm}
+                  setValue={setLoanTerm}
+                />
+                <Field
+                  label="Credit Score (optional)"
+                  value={creditScore}
+                  setValue={setCreditScore}
+                />
               </>
             ) : (
               <div className="md:col-span-2">
-                <label className="text-sm font-medium">Lease Term (months)</label>
+                <label className="text-sm font-medium mb-1 block">
+                  Lease Term (months)
+                </label>
                 <Select
                   onValueChange={(v) => setLeaseTerm(Number(v))}
                   defaultValue={leaseTerm.toString()}
                 >
-                  <SelectTrigger className="border border-black">
-                    <SelectValue placeholder="Select lease term" />
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select term" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="24">24 months</SelectItem>
@@ -226,126 +207,153 @@ export default function CalculatorPage() {
             )}
           </div>
 
-          {/* Interest / Rate Slider */}
+          {/* Slider */}
           <div>
             <label className="text-sm font-medium block mb-2">
-              Adjust Base {mode === "finance" ? "Interest" : "Money Factor"} Rate:{" "}
-              <span className="font-semibold">{baseRate.toFixed(1)}%</span>
+              Adjust Base {mode === "finance" ? "Interest" : "Money Factor"}:{" "}
+              <span className="font-semibold">
+                {baseRate.toFixed(2)}%
+              </span>
             </label>
             <Slider
               min={2.0}
               max={8.0}
               step={0.1}
               value={[baseRate]}
-              onValueChange={(val) => {
-                setBaseRate(val[0]);
-                calculate();
-              }}
+              onValueChange={(v) => setBaseRate(v[0])}
             />
             <p className="text-xs text-gray-500 mt-1">
-              Move the slider to simulate changing market or lease rates.
+              Adjust for market fluctuations.
             </p>
           </div>
 
           <Button
             onClick={calculate}
-            className="w-full bg-red-600 hover:bg-red-700 text-white mt-4"
+            className="w-full bg-red-600 hover:bg-red-700 text-white font-medium"
           >
-            {mode === "finance" ? "Compare Financing Rates" : "Estimate Lease"}
+            {mode === "finance"
+              ? "Compare Financing Options"
+              : "Estimate Lease Payment"}
           </Button>
 
-          {/* 📊 Results Table */}
           {results.length > 0 && (
-            <div className="mt-8">
-              <h2 className="text-2xl font-semibold text-center mb-4">
-                {mode === "finance"
-                  ? "📊 Financing Comparison"
-                  : "📉 Lease Estimate"}
-              </h2>
+            <>
+              {/* Table */}
+              <ResultsTable results={results} mode={mode} />
 
-              <div className="overflow-x-auto">
-                <table className="w-full text-center border border-gray-300 rounded-lg">
-                  <thead className="bg-red-600 text-white">
-                    <tr>
-                      <th className="p-3">
-                        {mode === "finance" ? "Lender" : "Lease Option"}
-                      </th>
-                      <th className="p-3">Rate (%)</th>
-                      <th className="p-3">Monthly Payment ($)</th>
-                      <th className="p-3">Total Cost ($)</th>
-                      <th className="p-3">Interest Paid ($)</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {results.map((r, i) => (
-                      <tr
-                        key={i}
-                        className={`border-b transition-colors ${
-                          r.isBest
-                            ? "bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-400 shadow-md"
-                            : "hover:bg-gray-50"
-                        }`}
-                      >
-                        <td className="p-4 font-semibold">{r.name}</td>
-                        <td>{r.adjustedRate}%</td>
-                        <td className="text-red-600 font-semibold">${r.monthly}</td>
-                        <td>${parseFloat(r.total).toLocaleString()}</td>
-                        <td>${parseFloat(r.interest).toLocaleString()}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* 💹 Payment Breakdown Chart (Finance Only) */}
+              {/* Chart */}
               {mode === "finance" && (
-                <div className="mt-12 text-center">
-                  <h3 className="text-2xl font-semibold text-red-600 mb-4">
-                    💹 Payment Breakdown
-                  </h3>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <PieChart>
-                      <Pie
-                        dataKey="value"
-                        data={[
-                          {
-                            name: "Principal",
-                            value:
-                              parseFloat(carPrice) - parseFloat(downPayment || "0"),
-                          },
-                          {
-                            name: "Interest",
-                            value: parseFloat(results[0]?.interest || "0"),
-                          },
-                        ]}
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={100}
-                        label={({ name, percent }) =>
-                          `${name} ${(percent * 100).toFixed(0)}%`
-                        }
-                      >
-                        {COLORS.map((color, index) => (
-                          <Cell key={`cell-${index}`} fill={color} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                      <Legend />
-                    </PieChart>
-                  </ResponsiveContainer>
-
-                  <p className="mt-3 text-gray-700">
-                    Total Loan Cost:{" "}
-                    <span className="font-semibold text-black">
-                      ${parseFloat(results[0]?.total || "0").toLocaleString()}
-                    </span>
-                  </p>
-                </div>
+                <Chart
+                  results={results}
+                  carPrice={carPrice}
+                  downPayment={downPayment}
+                  COLORS={COLORS}
+                />
               )}
-            </div>
+            </>
           )}
         </CardContent>
       </Card>
     </div>
   );
+}
+
+/* ---------------- Subcomponents ---------------- */
+
+function Field({ label, value, setValue }) {
+  return (
+    <div>
+      <label className="text-sm font-medium mb-1 block">{label}</label>
+      <Input
+        type="number"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+      />
+    </div>
+  );
+}
+
+function ResultsTable({ results, mode }) {
+  return (
+    <div className="mt-8">
+      <h2 className="text-lg font-semibold text-gray-800 text-center mb-4">
+        {mode === "finance" ? "Financing Comparison" : "Lease Estimate"}
+      </h2>
+
+      <div className="overflow-x-auto">
+        <table className="w-full text-center text-sm border border-gray-300 rounded-lg">
+          <thead className="bg-gray-100 text-gray-700">
+            <tr>
+              <Th>{mode === "finance" ? "Lender" : "Lease Option"}</Th>
+              <Th>Rate (%)</Th>
+              <Th>Monthly ($)</Th>
+              <Th>Total Cost ($)</Th>
+              <Th>Interest ($)</Th>
+            </tr>
+          </thead>
+          <tbody>
+            {results.map((r, i) => (
+              <tr
+                key={i}
+                className={`border-b ${
+                  r.isBest ? "bg-green-50 font-semibold" : "hover:bg-gray-50"
+                }`}
+              >
+                <Td>{r.name}</Td>
+                <Td>{r.adjustedRate}%</Td>
+                <Td className="text-red-600">${r.monthly}</Td>
+                <Td>${parseFloat(r.total).toLocaleString()}</Td>
+                <Td>${parseFloat(r.interest).toLocaleString()}</Td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function Chart({ results, carPrice, downPayment, COLORS }) {
+  return (
+    <div className="mt-12 text-center">
+      <h3 className="text-lg font-semibold text-gray-800 mb-4">
+        Payment Breakdown
+      </h3>
+      <ResponsiveContainer width="100%" height={300}>
+        <PieChart>
+          <Pie
+            dataKey="value"
+            data={[
+              {
+                name: "Principal",
+                value:
+                  parseFloat(carPrice) - parseFloat(downPayment || "0"),
+              },
+              { name: "Interest", value: parseFloat(results[0]?.interest || 0) },
+            ]}
+            cx="50%"
+            cy="50%"
+            outerRadius={100}
+            label={({ name, percent }) =>
+              `${name} ${(percent * 100).toFixed(0)}%`
+            }
+          >
+            {COLORS.map((c, i) => (
+              <Cell key={i} fill={c} />
+            ))}
+          </Pie>
+          <Tooltip />
+          <Legend />
+        </PieChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+function Th({ children }) {
+  return <th className="p-3 font-medium">{children}</th>;
+}
+
+function Td({ children }) {
+  return <td className="p-4">{children}</td>;
 }

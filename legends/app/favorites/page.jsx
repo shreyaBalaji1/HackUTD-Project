@@ -103,7 +103,7 @@ export default function FavoritesPage() {
     return (
       <div className="text-center mt-20 text-gray-600">
         <h2 className="text-2xl font-semibold mb-4">No Favorites Yet</h2>
-        <p>❤️ Start adding cars to your favorites to see recommendations!</p>
+        <p>Start adding cars to your favorites to see recommendations!</p>
       </div>
     );
   }
@@ -111,7 +111,7 @@ export default function FavoritesPage() {
   return (
     <div className="max-w-5xl mx-auto p-6">
       <h1 className="text-3xl font-bold text-red-600 text-center mb-8">
-        ❤️ Your Favorite Cars
+         Your Favorite Cars
       </h1>
 
       <div className="space-y-10">

@@ -82,7 +82,7 @@ export default function ComparePage() {
   if (loading) {
     return (
       <div className="p-6 text-center text-gray-600">
-        <h1 className="text-3xl font-semibold mb-4">🚘 Compare Cars</h1>
+        <h1 className="text-3xl font-semibold mb-4">Compare Cars</h1>
         <p>Loading...</p>
       </div>
     );
@@ -91,7 +91,7 @@ export default function ComparePage() {
   if (cars.length < 2) {
     return (
       <div className="p-6 max-w-2xl mx-auto text-center text-gray-600">
-        <h1 className="text-3xl font-semibold mb-4">🚘 Compare Cars</h1>
+        <h1 className="text-3xl font-semibold mb-4">Compare Cars</h1>
         <p className="text-lg mb-6">
           {cars.length === 0 
             ? "You haven't selected any cars to compare yet." 
@@ -129,7 +129,7 @@ export default function ComparePage() {
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
-      <h1 className="text-3xl font-semibold mb-8 text-center">🚗 Car Comparison</h1>
+      <h1 className="text-3xl font-semibold mb-8 text-center"> Car Comparison</h1>
 
       <div className="overflow-x-auto rounded-xl border border-gray-300 shadow-sm bg-white">
         <table className="min-w-full border-collapse">
