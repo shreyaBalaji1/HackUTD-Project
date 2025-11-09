@@ -14,10 +14,14 @@ import {
 import { Slider } from "@/components/ui/slider";
 import { Search, Heart } from "lucide-react";
 
+const carsData = [
+  { model: "Tesla Model 3", year: 2023, type: "Sedan", fuel: "Electric", engine: "EV", cost: 45000, interest: 3.5 },
+  { model: "Ford Mustang", year: 2021, type: "Coupe", fuel: "Gasoline", engine: "V8", cost: 55000, interest: 4.0 },
+  { model: "Toyota Corolla", year: 2022, type: "Sedan", fuel: "Hybrid", engine: "I4", cost: 25000, interest: 2.9 },
+  { model: "BMW X5", year: 2020, type: "SUV", fuel: "Diesel", engine: "V6", cost: 62000, interest: 4.5 },
+];
 
 export default function CarFilterPage() {
-  // Fetch cars from the backend API (database)
-  const [carsData, setCarsData] = useState([]);
   const [user, setUser] = useState(null);
   const [query, setQuery] = useState("");
   const [favorites, setFavorites] = useState([]);
@@ -29,19 +33,6 @@ export default function CarFilterPage() {
     fuel: "",
     engine: "",
   });
-
-  useEffect(() => {
-    async function fetchCars() {
-      try {
-        const res = await fetch("/api/cars");
-        const data = await res.json();
-        setCarsData(data);
-      } catch (err) {
-        setCarsData([]);
-      }
-    }
-    fetchCars();
-  }, []);
 
   // ✅ Load saved favorites and comparison list on mount
   useEffect(() => {
@@ -64,9 +55,9 @@ export default function CarFilterPage() {
   // ✅ Favorites logic
   const toggleFavorite = (car) => {
     setFavorites((prev) => {
-      const isFav = prev.some((fav) => fav.id === car.id);
+      const isFav = prev.some((fav) => fav.model === car.model);
       const updated = isFav
-        ? prev.filter((f) => f.id !== car.id)
+        ? prev.filter((f) => f.model !== car.model)
         : [...prev, car];
 
       localStorage.setItem("favorites", JSON.stringify(updated));
@@ -77,8 +68,8 @@ export default function CarFilterPage() {
   // ✅ Compare logic
   const toggleCompare = (car) => {
     setCompareList((prev) => {
-      const exists = prev.some((c) => c.id === car.id);
-      if (exists) return prev.filter((c) => c.id !== car.id);
+      const exists = prev.some((c) => c.model === car.model);
+      if (exists) return prev.filter((c) => c.model !== car.model);
       if (prev.length >= 3) return prev; // Limit to 3 cars
       return [...prev, car];
     });
@@ -90,7 +81,7 @@ export default function CarFilterPage() {
       car.cost >= filters.cost[0] &&
       car.cost <= filters.cost[1] &&
       (filters.year === "" || car.year === Number(filters.year)) &&
-  (filters.type === "" || car.body === filters.type) &&
+      (filters.type === "" || car.type === filters.type) &&
       (filters.fuel === "" || car.fuel === filters.fuel) &&
       (filters.engine === "" || car.engine === filters.engine)
     );
@@ -176,9 +167,10 @@ export default function CarFilterPage() {
               <Select onValueChange={(v) => handleFilterChange("engine", v)}>
                 <SelectTrigger><SelectValue placeholder="Select engine" /></SelectTrigger>
                 <SelectContent>
-                  {[...new Set(carsData.map(car => car.engine).filter(Boolean))].map((eng) => (
-                    <SelectItem key={eng} value={eng}>{eng}</SelectItem>
-                  ))}
+                  <SelectItem value="EV">EV</SelectItem>
+                  <SelectItem value="I4">I4</SelectItem>
+                  <SelectItem value="V6">V6</SelectItem>
+                  <SelectItem value="V8">V8</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -223,7 +215,7 @@ export default function CarFilterPage() {
                       <Heart
                         size={24}
                         stroke="red"
-                        fill={favorites.some((fav) => fav.id === car.id) ? "red" : "none"}
+                        fill={favorites.some((fav) => fav.model === car.model) ? "red" : "none"}
                         className="text-red-600 w-6 h-6"
                       />
                     </button>
@@ -232,10 +224,10 @@ export default function CarFilterPage() {
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-1 text-sm">
                   <p>Year: {car.year}</p>
-                  <p>Type: {car.body ? car.body : "N/A"}</p>
-                  <p>Fuel: {car.fuel ? car.fuel : "N/A"}</p>
+                  <p>Type: {car.type}</p>
+                  <p>Fuel: {car.fuel}</p>
                   <p>Engine: {car.engine}</p>
-                  <p className="font-semibold">Cost: ${car.cost?.toLocaleString?.() ?? car.cost}</p>
+                  <p className="font-semibold">Cost: ${car.cost.toLocaleString()}</p>
                   <p>Interest: {car.interest}%</p>
                 </div>
 
@@ -244,7 +236,7 @@ export default function CarFilterPage() {
                   <label className="flex items-center gap-2 text-sm">
                     <input
                       type="checkbox"
-                      checked={compareList.some((c) => c.id === car.id)}
+                      checked={compareList.some((c) => c.model === car.model)}
                       onChange={() => toggleCompare(car)}
                       className="accent-red-600 cursor-pointer"
                     />
@@ -261,17 +253,17 @@ export default function CarFilterPage() {
             </p>
           )}
         </div>
-      </div>
 
-      {/* ✅ Compare Now Floating Button - Outside container for proper positioning */}
-      {compareList.length >= 2 && (
-        <button
-          onClick={() => (window.location.href = "/compare")}
-          className="fixed bottom-6 right-6 bg-red-600 text-white px-6 py-3 rounded-full shadow-lg hover:bg-red-700 transition z-50"
-        >
-          Compare {compareList.length} Cars 🚘
-        </button>
-      )}
+        {/* ✅ Compare Now Floating Button */}
+        {compareList.length >= 2 && (
+          <button
+            onClick={() => (window.location.href = "/compare")}
+            className="fixed bottom-6 right-6 bg-red-600 text-white px-6 py-3 rounded-full shadow-lg hover:bg-red-700 transition"
+          >
+            Compare {compareList.length} Cars 🚘
+          </button>
+        )}
+      </div>
     </div>
   );
 }
