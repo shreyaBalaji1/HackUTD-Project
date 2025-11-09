@@ -47,6 +47,10 @@ export function Navigation() {
           <Link href="/favorites" className={linkClass("/favorites")}>
             Favorites ❤️
           </Link>
+          <Link href="/compare" className={linkClass("/compare")}>
+            Compare 🚘
+          </Link>
+
 
           {/* Optional welcome text */}
           {user && (
