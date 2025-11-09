@@ -1,6 +1,3 @@
-// This is your Prisma schema file.
-// Learn more at https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -24,8 +21,8 @@ model Car {
   trim     String?
   body     String?
   engine   String?
-  fuel     String?
   color    String?
   cost     Int
   interest Float
+  fuel     String?
 }

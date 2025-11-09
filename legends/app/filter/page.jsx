@@ -262,17 +262,17 @@ export default function CarFilterPage() {
             </p>
           )}
         </div>
-
-        {/* ✅ Compare Now Floating Button */}
-        {compareList.length >= 2 && (
-          <button
-            onClick={() => (window.location.href = "/compare")}
-            className="fixed bottom-6 right-6 bg-red-600 text-white px-6 py-3 rounded-full shadow-lg hover:bg-red-700 transition"
-          >
-            Compare {compareList.length} Cars 🚘
-          </button>
-        )}
       </div>
+
+      {/* ✅ Compare Now Floating Button - Outside container for proper positioning */}
+      {compareList.length >= 2 && (
+        <button
+          onClick={() => (window.location.href = "/compare")}
+          className="fixed bottom-6 right-6 bg-red-600 text-white px-6 py-3 rounded-full shadow-lg hover:bg-red-700 transition z-50"
+        >
+          Compare {compareList.length} Cars 🚘
+        </button>
+      )}
     </div>
   );
 }
