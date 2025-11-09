@@ -28,10 +28,10 @@ export default function CarFilterPage() {
   });
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const userName = params.get("user");
-    setUser(userName);
+    const stored = JSON.parse(localStorage.getItem("favorites") || "[]");
+    setFavorites(stored);
   }, []);
+  
 
   const handleFilterChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -40,7 +40,13 @@ export default function CarFilterPage() {
   const toggleFavorite = (car) => {
     setFavorites((prev) => {
       const isFav = prev.some((fav) => fav.model === car.model);
-      return isFav ? prev.filter((f) => f.model !== car.model) : [...prev, car];
+      const updated = isFav
+        ? prev.filter((f) => f.model !== car.model)
+        : [...prev, car];
+  
+      // Save to localStorage so favorites persist
+      localStorage.setItem("favorites", JSON.stringify(updated));
+      return updated;
     });
   };
 

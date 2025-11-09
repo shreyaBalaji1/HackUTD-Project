@@ -31,6 +31,6 @@
     "**/*.mts",
     "app/calculator/page.jsx",
     "app/filter/page.jsx"
-  ],
+, "app/favorites/page.jsx"  ],
   "exclude": ["node_modules"]
 }
