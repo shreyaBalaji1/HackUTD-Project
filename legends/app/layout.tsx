@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Car App",
+  title: "Toyota Vehicle Tool",
   description: "Find your car, calculate payments, and more.",
 };
 
