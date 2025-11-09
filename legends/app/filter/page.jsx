@@ -14,14 +14,10 @@ import {
 import { Slider } from "@/components/ui/slider";
 import { Search, Heart } from "lucide-react";
 
-const carsData = [
-  { model: "Tesla Model 3", year: 2023, type: "Sedan", fuel: "Electric", engine: "EV", cost: 45000, interest: 3.5 },
-  { model: "Ford Mustang", year: 2021, type: "Coupe", fuel: "Gasoline", engine: "V8", cost: 55000, interest: 4.0 },
-  { model: "Toyota Corolla", year: 2022, type: "Sedan", fuel: "Hybrid", engine: "I4", cost: 25000, interest: 2.9 },
-  { model: "BMW X5", year: 2020, type: "SUV", fuel: "Diesel", engine: "V6", cost: 62000, interest: 4.5 },
-];
 
 export default function CarFilterPage() {
+  // Fetch cars from the backend API (database)
+  const [carsData, setCarsData] = useState([]);
   const [user, setUser] = useState(null);
   const [query, setQuery] = useState("");
   const [favorites, setFavorites] = useState([]);
@@ -33,6 +29,19 @@ export default function CarFilterPage() {
     fuel: "",
     engine: "",
   });
+
+  useEffect(() => {
+    async function fetchCars() {
+      try {
+        const res = await fetch("/api/cars");
+        const data = await res.json();
+        setCarsData(data);
+      } catch (err) {
+        setCarsData([]);
+      }
+    }
+    fetchCars();
+  }, []);
 
   // ✅ Load saved favorites and comparison list on mount
   useEffect(() => {
